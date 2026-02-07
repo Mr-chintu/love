@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Valentine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0"></script>
+  <style>
+    .gradient-background {
+      background: rgb(255, 208, 229);
+      background: linear-gradient(180deg, rgba(255, 208, 229, 1) 0%, rgba(255, 232, 242, 1) 36%, rgba(255, 255, 255, 1) 100%);
+    }
+
+    .bounce2 {
+      animation: bounce2 2s ease infinite;
+    }
+
+    @keyframes bounce2 {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-20px); }
+      60% { transform: translateY(-10px); }
+    }
+
+    .heartbeat {
+      animation: heartbeat 1.5s ease-in-out infinite;
+    }
+
+    @keyframes heartbeat {
+      0% { transform: scale(1); }
+      5% { transform: scale(1.1); }
+      10% { transform: scale(1); }
+      15% { transform: scale(1.1); }
+      20% { transform: scale(1); }
+    }
+
+    .float {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .love-text {
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 1s ease-out;
+    }
+
+    .run-away {
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .button-container {
+      position: relative;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+      min-width: 400px;
+      min-height: 120px;
+    }
+  </style>
+</head>
+<body class="gradient-background">
+  <div class="flex flex-col items-center justify-center min-h-screen p-4">
+    <!-- Teddy Image -->
+    <div class="relative mb-8">
+      <img id="teddyImage" src="images/image1.gif" 
+           alt="Cute Valentine Teddy" 
+           class="rounded-lg h-[300px] w-[300px] object-cover shadow-lg float" />
+      <div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center heartbeat">
+        ❤️
+      </div>
+    </div>
+
+    <!-- Question -->
+    <h1 id="question" class="text-5xl md:text-6xl font-bold text-[#bd1e59] mt-8 mb-6 text-center love-text">
+      Will you be my Valentine?
+    </h1>
+
+    <!-- Response Buttons Container -->
+    <div id="buttonContainer" class="button-container mt-4 fade-in">
+      <!-- Yes Button (stays in place) -->
+      <button id="yesButton"
+        class="bounce2 inline-flex items-center justify-center whitespace-nowrap rounded-full text-2xl font-medium h-16 w-40 bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg transform transition-all duration-300 hover:scale-110 hover:shadow-xl z-10">
+        <span class="flex items-center">
+          <span class="mr-2">💝</span>
+          Yes
+        </span>
+      </button>
+
+      <!-- No Button (escapes when mouse approaches) -->
+      <button id="noButton"
+        class="run-away inline-flex items-center justify-center whitespace-nowrap rounded-full text-xl font-medium h-14 w-32 bg-gray-300 text-gray-700 shadow-md z-20">
+        <span class="flex items-center">
+          <span class="mr-2">😢</span>
+          <span id="noText">No</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Love Message (Hidden initially) -->
+    <div id="loveMessage" class="hidden mt-12 text-center max-w-2xl fade-in">
+      <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
+        <h2 class="text-4xl md:text-5xl font-bold text-[#bd1e59] mb-6 heartbeat love-text">
+          We're Made for Each Other! 💖
+        </h2>
+        <p class="text-2xl md:text-3xl text-gray-700 mb-6">
+          "In a sea of people, my eyes will always search for you."
+        </p>
+        <p class="text-xl text-gray-600 mb-8">
+          I love you more than words can express. Every moment with you is precious, 
+          and I can't wait to create countless more beautiful memories together.
+        </p>
+        <div class="flex justify-center space-x-4 text-4xl">
+          <span class="heartbeat">💕</span>
+          <span class="heartbeat" style="animation-delay: 0.2s">🌹</span>
+          <span class="heartbeat" style="animation-delay: 0.4s">✨</span>
+          <span class="heartbeat" style="animation-delay: 0.6s">💫</span>
+          <span class="heartbeat" style="animation-delay: 0.8s">💖</span>
+        </div>
+        <p class="text-2xl text-[#bd1e59] font-bold mt-8">
+          I love youuu to the moon and back! 🚀🌙
+        </p>
+      </div>
+    </div>
+
+    <!-- Romantic Music -->
+    <audio id="romanticMusic" loop preload="auto">
+      <source src="https://assets.mixkit.co/music/preview/mixkit-romantic-sunset-687.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <script>
+    const yesButton = document.getElementById('yesButton');
+    const noButton = document.getElementById('noButton');
+    const teddyImage = document.getElementById('teddyImage');
+    const question = document.getElementById('question');
+    const noText = document.getElementById('noText');
+    const loveMessage = document.getElementById('loveMessage');
+    const buttonContainer = document.getElementById('buttonContainer');
+    const romanticMusic = document.getElementById('romanticMusic');
+    
+    let noClickCount = 0;
+    let yesSize = 1;
+    let isNoButtonRunning = false;
+    let noButtonPosition = { x: 0, y: 0 };
+    
+    // Array of images - images 2-6 will be reused in a cycle
+    const intermediateImages = [
+      'images/image2.gif',
+      'images/image3.gif',
+      'images/image4.gif',
+      'images/image5.gif',
+      'images/image6.gif'
+    ];
+    
+    // Start with image1
+    teddyImage.src = 'images/image1.gif';
+
+    // Track mouse position
+    let mouseX = 0;
+    let mouseY = 0;
+
+    // Function to get difficulty level based on click count
+    function getDifficulty() {
+      if (noClickCount === 0) return 'easy';      // First click - easy
+      if (noClickCount === 1) return 'easy';      // Second click - easy
+      if (noClickCount === 2) return 'medium';    // Third click - medium
+      if (noClickCount === 3) return 'medium';    // Fourth click - medium
+      if (noClickCount === 4) return 'hard';      // Fifth click - hard
+      if (noClickCount === 5) return 'hard';      // Sixth click - hard
+      return 'very-hard';                         // After sixth - very hard
+    }
+
+    // Get escape parameters based on difficulty
+    function getEscapeParams() {
+      const difficulty = getDifficulty();
+      switch(difficulty) {
+        case 'easy':
+          return { triggerDistance: 30, escapeDistance: 50, escapeChance: 0.2 };
+        case 'medium':
+          return { triggerDistance: 40, escapeDistance: 80, escapeChance: 0.4 };
+        case 'hard':
+          return { triggerDistance: 60, escapeDistance: 120, escapeChance: 0.6 };
+        case 'very-hard':
+          return { triggerDistance: 80, escapeDistance: 150, escapeChance: 0.8 };
+        default:
+          return { triggerDistance: 30, escapeDistance: 50, escapeChance: 0.2 };
+      }
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      
+      // Check if mouse is near the No button
+      if (isNoButtonRunning) return;
+      
+      const noBtnRect = noButton.getBoundingClientRect();
+      const noBtnCenterX = noBtnRect.left + noBtnRect.width / 2;
+      const noBtnCenterY = noBtnRect.top + noBtnRect.height / 2;
+      
+      // Calculate distance between mouse and button
+      const distance = Math.sqrt(
+        Math.pow(mouseX - noBtnCenterX, 2) + 
+        Math.pow(mouseY - noBtnCenterY, 2)
+      );
+      
+      // Get difficulty-based parameters
+      const params = getEscapeParams();
+      
+      // If mouse gets close, sometimes make button escape (based on chance)
+      if (distance < params.triggerDistance) {
+        if (Math.random() < params.escapeChance) {
+          escapeNoButton(params.escapeDistance);
+        }
+      }
+    });
+
+    // No button click handler
+    noButton.addEventListener('click', () => {
+      noClickCount++;
+      
+      // Change teddy image - use intermediate images (2-6) in cycle
+      // Get image index: 0->image2, 1->image3, 2->image4, 3->image5, 4->image6, then cycle
+      const imageIndex = (noClickCount - 1) % intermediateImages.length;
+      teddyImage.src = intermediateImages[imageIndex];
+      teddyImage.classList.add('shake');
+      setTimeout(() => {
+        teddyImage.classList.remove('shake');
+      }, 500);
+      
+      // Make Yes button bigger (gradually)
+      yesSize = Math.min(2.2, yesSize + 0.15);
+      yesButton.style.transform = `scale(${yesSize})`;
+      yesButton.style.height = `${64 + (noClickCount * 6)}px`;
+      yesButton.style.width = `${160 + (noClickCount * 15)}px`;
+      yesButton.style.fontSize = `${24 + (noClickCount * 2)}px`;
+      
+      // Make No button smaller (gradually)
+      const newNoScale = Math.max(0.6, 1 - (noClickCount * 0.07));
+      noButton.style.transform = `scale(${newNoScale})`;
+      noButton.style.height = `${56 - (noClickCount * 3)}px`;
+      noButton.style.width = `${128 - (noClickCount * 8)}px`;
+      noButton.style.fontSize = `${20 - (noClickCount * 1)}px`;
+      
+      // Change No button text
+      const noTexts = [
+        "No", 
+        "Are you sure?", 
+        "Really? 😢", 
+        "Don't do this to me :(", 
+        "You're breaking my heart 💔", 
+        "I'm gonna cry... 😭",
+        "Okay... last chance"
+      ];
+      noText.textContent = noTexts[Math.min(noClickCount, noTexts.length - 1)];
+      
+      // Change No button color and style
+      const colors = [
+        "bg-gray-300", 
+        "bg-red-100", 
+        "bg-red-200", 
+        "bg-red-300", 
+        "bg-red-400", 
+        "bg-red-500",
+        "bg-red-600"
+      ];
+      noButton.className = noButton.className.replace(/bg-\w+-\d+/, colors[Math.min(noClickCount, colors.length - 1)]);
+      noButton.className = noButton.className.replace(/text-\w+-\d+/, "text-white");
+      
+      // Change question text
+      const questions = [
+        "Will you be my Valentine?",
+        "Pretty please? 🥺",
+        "You make my heart smile!",
+        "I'm crazy about you 💕",
+        "You're my everything ✨",
+        "Just say yes! 💖",
+        "I'll love you forever..."
+      ];
+      question.textContent = questions[Math.min(noClickCount, questions.length - 1)];
+      
+      // Add floating hearts when No is clicked
+      createFloatingHeart();
+    });
+
+    // Function to make No button escape
+    function escapeNoButton(escapeDistance = 100) {
+      if (isNoButtonRunning) return;
+      isNoButtonRunning = true;
+      
+      const containerRect = buttonContainer.getBoundingClientRect();
+      const noBtnRect = noButton.getBoundingClientRect();
+      
+      // Calculate escape direction based on mouse position
+      const noBtnCenterX = noBtnRect.left + noBtnRect.width / 2;
+      const noBtnCenterY = noBtnRect.top + noBtnRect.height / 2;
+      
+      // Vector from mouse to button
+      const dx = noBtnCenterX - mouseX;
+      const dy = noBtnCenterY - mouseY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // If mouse is right on top of button, pick random direction
+      let escapeX, escapeY;
+      if (distance < 5) {
+        escapeX = (Math.random() - 0.5) * escapeDistance;
+        escapeY = (Math.random() - 0.5) * escapeDistance;
+      } else {
+        // Normalize and scale
+        escapeX = (dx / distance) * escapeDistance;
+        escapeY = (dy / distance) * escapeDistance;
+      }
+      
+      // Calculate new position
+      let newX = noButtonPosition.x + escapeX;
+      let newY = noButtonPosition.y + escapeY;
+      
+      // Keep within container bounds
+      const maxX = containerRect.width - noBtnRect.width;
+      const maxY = containerRect.height - noBtnRect.height;
+      
+      newX = Math.max(0, Math.min(newX, maxX));
+      newY = Math.max(0, Math.min(newY, maxY));
+      
+      // Apply new position
+      noButton.style.left = `${newX}px`;
+      noButton.style.top = `${newY}px`;
+      noButtonPosition.x = newX;
+      noButtonPosition.y = newY;
+      
+      // Add shake effect
+      noButton.classList.add('shake');
+      setTimeout(() => {
+        noButton.classList.remove('shake');
+      }, 500);
+      
+      // Allow button to escape again after delay
+      setTimeout(() => {
+        isNoButtonRunning = false;
+      }, 500);
+    }
+
+    // Yes button click handler
+    yesButton.addEventListener('click', () => {
+      // Show love message
+      loveMessage.classList.remove('hidden');
+      
+      // Change to image7 (final image)
+      teddyImage.src = 'images/image7.gif';
+      teddyImage.classList.add('heartbeat');
+      
+      // Hide question and buttons with fade out
+      question.style.opacity = '0';
+      question.style.transition = 'opacity 0.5s';
+      yesButton.style.opacity = '0';
+      yesButton.style.transition = 'opacity 0.5s';
+      noButton.style.opacity = '0';
+      noButton.style.transition = 'opacity 0.5s';
+      
+      setTimeout(() => {
+        question.style.display = 'none';
+        yesButton.style.display = 'none';
+        noButton.style.display = 'none';
+      }, 500);
+      
+      // Trigger confetti
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.6 }
+      });
+      
+      // More confetti after delays
+      setTimeout(() => {
+        confetti({
+          particleCount: 200,
+          angle: 60,
+          spread: 70,
+          origin: { x: 0 }
+        });
+      }, 300);
+      
+      setTimeout(() => {
+        confetti({
+          particleCount: 200,
+          angle: 120,
+          spread: 70,
+          origin: { x: 1 }
+        });
+      }, 600);
+      
+      // Heart-shaped confetti
+      setTimeout(() => {
+        const heartCanvas = document.createElement('canvas');
+        const heartCtx = heartCanvas.getContext('2d');
+        heartCanvas.width = 20;
+        heartCanvas.height = 20;
+        
+        // Draw heart shape
+        heartCtx.fillStyle = '#ff4081';
+        heartCtx.beginPath();
+        heartCtx.moveTo(10, 15);
+        heartCtx.bezierCurveTo(10, 12, 5, 5, 10, 5);
+        heartCtx.bezierCurveTo(15, 5, 20, 12, 20, 15);
+        heartCtx.bezierCurveTo(20, 20, 10, 25, 10, 25);
+        heartCtx.bezierCurveTo(0, 20, 0, 15, 0, 15);
+        heartCtx.bezierCurveTo(0, 12, 5, 5, 10, 5);
+        heartCtx.fill();
+        
+        confetti({
+          particleCount: 50,
+          spread: 100,
+          scalar: 2,
+          shapes: ['image'],
+          shapeOptions: {
+            image: {
+              src: heartCanvas.toDataURL(),
+              width: 20,
+              height: 20
+            }
+          },
+          origin: { y: 0.8 }
+        });
+      }, 900);
+      
+      // Play romantic music
+      romanticMusic.volume = 0.3;
+      romanticMusic.play().catch(e => {
+        console.log("Audio play failed:", e);
+        // Some browsers require user interaction first
+        document.addEventListener('click', () => {
+          romanticMusic.play();
+        }, { once: true });
+      });
+      
+      // Add lots of floating hearts
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          createFloatingHeart();
+        }, i * 100);
+      }
+    });
+
+    // Function to create floating hearts
+    function createFloatingHeart() {
+      const heart = document.createElement('div');
+      heart.innerHTML = '💖';
+      heart.style.position = 'fixed';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.top = '100vh';
+      heart.style.fontSize = Math.random() * 30 + 20 + 'px';
+      heart.style.opacity = '0.8';
+      heart.style.zIndex = '9999';
+      heart.style.pointerEvents = 'none';
+      heart.style.userSelect = 'none';
+      document.body.appendChild(heart);
+      
+      // Animate heart floating up
+      const animation = heart.animate([
+        { 
+          transform: 'translateY(0) rotate(0deg) scale(1)', 
+          opacity: 0.8 
+        },
+        { 
+          transform: `translateY(-${window.innerHeight + 100}px) rotate(${Math.random() * 360}deg) scale(0.5)`, 
+          opacity: 0 
+        }
+      ], {
+        duration: Math.random() * 4000 + 3000,
+        easing: 'cubic-bezier(0.215, 0.610, 0.355, 1)'
+      });
+      
+      // Remove heart after animation
+      animation.onfinish = () => heart.remove();
+    }
+
+    // Initial floating hearts
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => createFloatingHeart(), i * 800);
+    }
+
+    // Set initial positions for buttons (side by side)
+    setTimeout(() => {
+      // Position buttons side by side
+      const containerRect = buttonContainer.getBoundingClientRect();
+      
+      // Center Yes button
+      const yesLeft = (containerRect.width / 2) - 170; // Half width minus half button width
+      yesButton.style.position = 'absolute';
+      yesButton.style.left = `${yesLeft}px`;
+      yesButton.style.top = '0px';
+      
+      // Position No button to the right of Yes button
+      const noLeft = yesLeft + yesButton.offsetWidth + 20;
+      noButton.style.position = 'absolute';
+      noButton.style.left = `${noLeft}px`;
+      noButton.style.top = '0px';
+      
+      noButtonPosition = { x: noLeft, y: 0 };
+    }, 100);
+
+    // Also escape when mouse enters the No button area
+    noButton.addEventListener('mouseenter', () => {
+      const params = getEscapeParams();
+      setTimeout(() => {
+        if (!isNoButtonRunning && Math.random() < params.escapeChance) {
+          escapeNoButton(params.escapeDistance);
+        }
+      }, 200);
+    });
+  </script>
+</body>
+</html>
